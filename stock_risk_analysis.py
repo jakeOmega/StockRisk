@@ -56,8 +56,8 @@ def growth_to_values(initial_value, growth_data):
 
 historical_data = pd.read_csv( "E:\\Libraries\\Downloads\\^GSPC.csv", parse_dates=["Date"])
 historical_data = historical_data.set_index("Date")
-historical_data["Growth"] = np.log(historical_data["Adj Close"]) - np.log(historical_data["Adj Close"]).shift(1)
-historical_data["Vol_Growth"] = np.log(historical_data.Volume) - np.log(historical_data.Volume.shift(1))
+historical_data["Growth"] = (historical_data["Adj Close"] - historical_data["Adj Close"].shift(1))/np.max([historical_data["Adj Close"], historical_data["Adj Close"].shift(1)], axis=0)
+historical_data["Vol_Growth"] = (historical_data.Volume - historical_data.Volume.shift(1))/np.max([historical_data.Volume, historical_data.Volume.shift(1)], axis=0)
 historical_data = historical_data[(historical_data.Growth.notnull()) & (historical_data.Vol_Growth.notnull())]
 pct_to_val_growth = gen_emp_func(historical_data.Growth)
 val_to_pct_growth = gen_inv_emp_func(historical_data.Growth)
@@ -88,7 +88,7 @@ plt.show()
 
 
 parallel_runs = 1
-serial_runs = 1000
+serial_runs = 10000
 seq_growth = []
 seq_volume = []
 input_data = np.array(historical_data[["Growth_Bin", "Volume_Bin"]])
@@ -115,6 +115,7 @@ plt.plot(max_sim)
 plt.show()
 
 [plt.plot(seq_volume[i]) for i in range(parallel_runs * serial_runs)]
+plt.yscale("log")
 plt.show()
 plt.hist([x[-1] for x in seq_volume], bins=30)
 plt.show()
@@ -125,4 +126,5 @@ plt.plot(p5)
 plt.plot(mean)
 plt.plot(p95)
 plt.plot(max_sim)
+plt.yscale("log")
 plt.show()
